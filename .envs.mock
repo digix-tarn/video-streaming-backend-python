@@ -1,0 +1,14 @@
+# HOST=192.168.1.83
+# HOST=localhost
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+UPLOAD_DIR=videos
+UPLOAD_DIR_HLS=uploads
+HLS_DIR=videos
+IMAGE_PATH=images
+THUMBNAIL_PATH=thumbnails
+MAIN_PATH=D:/storage
+SUB_PATH=python
+
+DATABASE_URL=postgresql+asyncpg://postgres:1234@localhost/steam_system
