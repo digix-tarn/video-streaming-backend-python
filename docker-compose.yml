@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"  # ใช้ค่าจากไฟล์ .env
+    env_file:
+      - .env  # โหลดค่าตัวแปรจากไฟล์ .env
+    volumes:
+      - .:/app
+    environment:
+      - APP_HOST=${HOST}  # ใช้ค่าจาก .env ในการตั้งค่าตัวแปร environment
+      - APP_PORT=${PORT}  # ใช้ค่าจาก .env ในการตั้งค่าตัวแปร environment
+    command: ["uvicorn", "main:app", "--host", "${HOST}", "--port", "${PORT}", "--reload"]
