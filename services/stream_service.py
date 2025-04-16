@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from config import DevelopmentConfig
 from fastapi.responses import FileResponse, JSONResponse
 import os
@@ -12,17 +13,39 @@ UPLOAD_DIR = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.UPLOAD_DIR}"
 UPLOAD_DIR_HLS = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.UPLOAD_DIR_HLS}"
 HLS_DIR = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.HLS_DIR}"
 THUMBNAIL_PATH = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.IMAGE_PATH}/{config.THUMBNAIL_PATH}"
-URL_HOST = config.HOST
+URL_HOST = "localhost"
 
-def get_video_hls(video_id: str):
-    video_quality_urls = [
-       f"http://{URL_HOST}:8000/videos/{video_id}/240p.m3u8",
-       f"http://{URL_HOST}:8000/videos/{video_id}/480p.m3u8",
-       f"http://{URL_HOST}:8000/videos/{video_id}/720p.m3u8",
-       f"http://{URL_HOST}:8000/videos/{video_id}/1080p.m3u8",
-    ]
-
-    return {"url": video_quality_urls}
+async def get_video_hls(video_id: str):
+    try:
+        # สร้าง path สำหรับ HLS ที่เกี่ยวข้อง
+        video_quality_urls = []
+        for quality in ["240p", "480p", "720p", "1080p"]:
+            file_path = os.path.join(HLS_DIR, video_id, f"{quality}.m3u8")
+            
+            # ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+            if os.path.exists(file_path):
+                # ถ้าไฟล์มีอยู่ ให้เพิ่ม URL ที่เหมาะสมใน list
+                video_quality_urls.append(f"http://{URL_HOST}:8000/videos/{video_id}/{quality}.m3u8")
+        
+        # ถ้าไม่มีไฟล์ใด ๆ กลับค่าผิดพลาด
+        if not video_quality_urls:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "No available streams for this video_id"}
+            )
+        
+        # คืนค่า URL ของไฟล์ m3u8
+        return JSONResponse(
+            status_code=200,
+            content={"urls": video_quality_urls}
+        )
+    
+    except Exception as e:
+        # ถ้ามีข้อผิดพลาดที่เกิดขึ้น ให้ส่งข้อความข้อผิดพลาด
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"An error occurred: {str(e)}"}
+        )
 
 def stream_video():
     path = os.path.join(UPLOAD_DIR, "converted_720p.mp4")
@@ -57,10 +80,21 @@ async def get_video_list(db: AsyncSession = None):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 def get_thumbnail(image_name: str):
-    image_path = os.path.join(THUMBNAIL_PATH, image_name)
-    print(image_path)
-    # ตรวจสอบว่าไฟล์มีอยู่หรือไม่
-    if os.path.exists(image_path):
-        return FileResponse(image_path)
-    else:
-        return {"error": "Image not found"}
+    try:
+        image_path = os.path.join(THUMBNAIL_PATH, image_name)
+        print(image_path)
+
+        # ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+        if os.path.exists(image_path):
+            return FileResponse(image_path, media_type="image/jpeg")
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Image not found"}
+            )
+    except Exception as e:
+        # ถ้ามีข้อผิดพลาดภายในให้ส่งข้อความข้อผิดพลาด
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"An error occurred: {str(e)}"}
+        )

@@ -11,15 +11,9 @@ steam_router = APIRouter()
 UPLOAD_DIR = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.UPLOAD_DIR}"
 
 
-@steam_router.get("/")
-def read_root():
-    return {"message": "Hello, world!"}
-
-
-
 @steam_router.get("/video-hls/{video_id}")
-def video_hls(video_id: str):
-    caller = get_video_hls(video_id)
+async def video_hls(video_id: str):
+    caller = await get_video_hls(video_id)
 
     return caller
 
@@ -33,7 +27,7 @@ async def video_list(db: AsyncSession = Depends(get_db)):
     caller = await get_video_list(db)
     return caller
 
-@steam_router.get("/thumbnails/{image_name}")
-async def thumbnail(image_name: str):
-    caller = get_thumbnail(image_name)
-    return caller
+# @steam_router.get("/thumbnails/{image_name}")
+# async def thumbnail(image_name: str):
+#     caller = get_thumbnail(image_name)
+#     return caller

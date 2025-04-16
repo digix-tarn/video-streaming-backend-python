@@ -1,5 +1,5 @@
 
-from fastapi import  FastAPI
+from fastapi import  FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from config import DevelopmentConfig
@@ -24,6 +24,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class CORSEnabledStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: dict) -> Response:
+        response: Response = await super().get_response(path, scope)
+        # ดึงค่า origin จาก request headers
+        headers = dict(scope.get("headers") or [])
+        origin = headers.get(b"origin", b"").decode()
+        allowed_origins = ["http://localhost:4200", "http://192.168.1.83:4200"]
+        if origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+        # หรือถ้าต้องการให้เปิดทั้งโดเมนใน dev mode สามารถกำหนดเป็น "*"
+        # response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 UPLOAD_DIR = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.UPLOAD_DIR}"
@@ -32,25 +46,15 @@ HLS_DIR = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.HLS_DIR}"
 THUMBNAIL_PATH = f"{config.MAIN_PATH}/{config.SUB_PATH}/{config.IMAGE_PATH}/{config.THUMBNAIL_PATH}"
 URL_HOST = config.HOST
 
-# os.makedirs(UPLOAD_DIR, exist_ok=True)
-# os.makedirs(UPLOAD_DIR_HLS, exist_ok=True)
-# os.makedirs(HLS_DIR, exist_ok=True)
-
-
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
-
-app.mount("/videos", StaticFiles(directory=UPLOAD_DIR), name="videos")
+app.mount("/videos", CORSEnabledStaticFiles(directory=HLS_DIR), name="videos")
 app.mount("/images/thumbnails", StaticFiles(directory=THUMBNAIL_PATH), name="thumbnails")
 
+# @app.get("/")
+# def read_root():
+#     return {"message": "Hello, world!"}
+
+
 app.include_router(api_router)
-
-
 
 
 if __name__ == "__main__":

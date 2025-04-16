@@ -65,10 +65,12 @@ async def upload_hls_steam(file: UploadFile = File(...),db: AsyncSession = None)
         name_file_org, _ = os.path.splitext(file.filename)
 
         new_filename = f"{uuid.uuid4().hex}.mp4"
-        input_path = os.path.join(UPLOAD_DIR_HLS, new_filename)
-        base_name = os.path.splitext(new_filename)[0]
-        steam_path = f"{UPLOAD_DIR_HLS}/{base_name}/master.m3u8"
 
+        input_path = os.path.join(UPLOAD_DIR_HLS, new_filename)
+
+        base_name = os.path.splitext(new_filename)[0]
+
+        steam_path = f"{UPLOAD_DIR_HLS}/{base_name}/master.m3u8"
         content = await file.read()
 
         duration_seconds = await get_video_duration_seconds(content)
@@ -78,6 +80,9 @@ async def upload_hls_steam(file: UploadFile = File(...),db: AsyncSession = None)
 
         thumbnail_time = date_thumbnail()
         thumbnail_path = f"{THUMBNAIL_PATH}/{base_name}_thumbnail_{thumbnail_time}.jpg"
+        thumbnail_path_stamp = f"{base_name}_thumbnail_{thumbnail_time}.jpg"
+        steam_path_stamp = f"{config.HLS_DIR}/{base_name}/master.m3u8"
+        input_path_stamp = f"{config.UPLOAD_DIR_HLS}/{base_name}/master.m3u8"
         # print(thumbnail_path)
 
         with open(thumbnail_path, "wb") as f:
@@ -86,9 +91,9 @@ async def upload_hls_steam(file: UploadFile = File(...),db: AsyncSession = None)
         file_info = FileInfo(
             filename=new_filename,
             org_name=name_file_org,
-            path_upload=input_path,
-            path_steam=steam_path,
-            path_thumbnail=thumbnail_path,
+            path_upload=input_path_stamp,
+            path_steam=steam_path_stamp,
+            path_thumbnail=thumbnail_path_stamp,
             time_play=f"{duration_seconds}",
             location=input_path,
             uploaded_at=datetime.now()
