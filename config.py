@@ -16,6 +16,8 @@ class Config:
     MAIN_PATH = os.getenv("MAIN_PATH")
     SUB_PATH = os.getenv("SUB_PATH")
     DATABASE_URL = os.getenv("DATABASE_URL")
+    PUSH_PUB_KEY = os.getenv("PUSH_PUB_KEY")
+    PUSH_PRI_KEY = os.getenv("PUSH_PRI_KEY")
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -30,6 +32,8 @@ class DevelopmentConfig(Config):
     MAIN_PATH = os.getenv("MAIN_PATH")
     SUB_PATH = os.getenv("SUB_PATH")
     DATABASE_URL = os.getenv("DATABASE_URL")
+    PUSH_PUB_KEY = os.getenv("PUSH_PUB_KEY")
+    PUSH_PRI_KEY = os.getenv("PUSH_PRI_KEY")
 
 class ProductionConfig(Config):
     DEBUG = False
