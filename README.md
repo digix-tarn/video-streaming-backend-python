@@ -1,5 +1,11 @@
 # video-streaming-backend-python
 
+##CREATE VIRTUAL ENVIRONMENT
+python -m venv .venv
+
+##ACTIVATE VIRTUAL ENVIRONMENT
+.venv\scripts\activate
+
 start python main.py
 
 install pip install -r requirements.txt
